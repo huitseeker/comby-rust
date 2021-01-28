@@ -1,0 +1,225 @@
+# Those templates are expected to work in any code base, offering a more
+# readable / concise way to express processing in Rust, thanks to —mostly— the
+# use of higher-order combinators on `Option` and `Result`.
+
+[map-transpose-forward]
+match='match :[target] { Some(:[var]) => Some(:[foo]?), None => None, }'
+rewrite=':[target].map(|:[var]| { :[foo] }).transpose()?'
+[map-transpose-backward]
+match='match :[target] { None => None, Some(:[var]) => Some(:[foo]?), }'
+rewrite=':[target].map(|:[var]| { :[foo] }).transpose()?'
+[rmap-trivial-backward]
+match='match :[target] { Ok(:[var]) => Ok(:[var]), Err(:[x]) => Err(:[x]), }'
+rewrite=':[target]'
+[rmap-trivial-forward]
+match='match :[target] { Err(:[x]) => Err(:[x]), Ok(:[var]) => Ok(:[var]), }'
+rewrite=':[target]'
+[rmap-backward]
+match='match :[target] { Ok(:[var]) => Ok(:[foo]), Err(:[x]) => Err(:[x]), }'
+rewrite=':[target].map(|:[var]| { :[foo] })'
+rule='where :[var] != :[foo]'
+[rmap-forward]
+match='match :[target] { Err(:[x]) => Err(:[x]), Ok(:[var]) => Ok(:[foo]), }'
+rewrite=':[target].map(|:[var]| { :[foo] })'
+rule='where :[var] != :[foo]'
+[map-trivial-backward]
+match='match :[target] { Some(:[var]) => Some(:[var]), None => None, }'
+rewrite=':[target]'
+[map-trivial-forward]
+match='match :[target] { None => None, Some(:[var]) => Some(:[var]), }'
+rewrite=':[target]'
+[map-backward]
+match='match :[target] { Some(:[var]) => Some(:[foo]), None => None, }'
+rewrite=':[target].map(|:[var]| { :[foo] })'
+rule='''
+where :[var] != :[foo], match :[foo] {
+| ":[~.+\\?]" -> false
+| ":[_]" -> true
+}
+'''
+[map-forward]
+match='match :[target] { None => None, Some(:[var]) => Some(:[foo]), }'
+rewrite=':[target].map(|:[var]| { :[foo] })'
+rule='''
+where :[var] != :[foo], match :[foo] {
+| ":[~.+\\?]" -> false
+| ":[_]" -> true
+}
+'''
+[and-then-forward]
+match='match :[target] { None => None, Some(:[var]) => :[foo], }'
+rewrite=':[target].and_then(|:[var]| { :[foo] })'
+rule='''
+where match :[foo] {
+| "Some(:[_])" -> false
+| ":[_]" -> true
+}
+'''
+[and-then-backward]
+match='match :[target] { Some(:[var]) => :[foo], None => None, }'
+rewrite=':[target].and_then(|:[var]| { :[foo] })'
+rule='''
+where match :[foo] {
+| "Some(:[_])" -> false
+| ":[_]" -> true
+}
+'''
+[basic-interrogation-forward]
+match='match :[target] { Err(:[err]) => return Err(:[err]), Ok(:[var]) => :[var], }'
+rewrite=':[target]?'
+[basic-interrogation-backward]
+match='match :[target] { Ok(:[var]) => :[var], Err(:[err]) => return Err(:[err]), }'
+rewrite=':[target]?'
+[contains-let-remove]
+match='if :[tbl].contains_key(:[key]) { let :[var] = :[tbl].remove(:[key]); :[?cont] }'
+rewrite='let :[var] = :[tbl].remove(:[key]); if :[var].is_some() { :[cont] }'
+[contains-remove]
+match='if :[tbl].contains_key(:[key]) { :[tbl].remove(:[key]); :[?cont] }'
+rewrite='if :[tbl].remove(:[key]).is_some() { :[cont] }'
+[entry-match-backward]
+match='''
+match :[map].entry(:[key]) {
+    Entry::Vacant(:[entry]) => :[entry].insert(:[stg]),
+    Entry::Occupied(:[val]) => :[val].into_mut(),
+}:[end\n]
+'''
+rewrite=':[map].entry(:[key]).or_insert_with(|| :[stg]):[end]'
+[entry-match-forward]
+match='''
+match :[map].entry(:[key]) {
+    Entry::Occupied(:[val]) => :[val].into_mut(),
+    Entry::Vacant(:[entry]) => :[entry].insert(:[stg]),
+}:[end\n]
+'''
+rewrite=':[map].entry(:[key]).or_insert_with(|| :[stg]):[end]'
+[filter-filter-and]
+match='.filter(|:[var]|:[filter1]) .filter(|:[var]|:[filter2])'
+rewrite='.filter(|:[var]|:[filter1] &&:[filter2])'
+[filter-find]
+match='.filter(:[pat]) .nth(0)'
+rewrite='.find(:[pat])'
+[find-opt-some-any]
+match='.filter(:[pat]) .is_some()'
+rewrite='.any(:[pat])'
+[find-opt-none-all]
+match='.filter(|:[var]| :[pat]) .is_none()'
+rewrite='.all(|:[var]| !:[pat])'
+[if-let-ok-map-err]
+match='if let Ok(:[var]) = :[opt] { Ok(:[var]) } else { Err(:[e]) }'
+rewrite=':[opt].map_err(|_| :[e])'
+[if-let-return-err]
+match='if let Some(:[var]) = :[target] { :[var] } else { return Err(:[foo]); }'
+rewrite=':[target].ok_or_else(|| :[foo])?'
+[if-let-some-map]
+match='if let Some(:[var]) = :[opt] { Some(:[out]) } else { None }'
+rewrite=':[opt].map(|:[var]| { :[out] })'
+[is-err-backward]
+match='match :[target] { Ok(:[var]) => false, Err(:[e]) => true, }'
+rewrite=':[target].is_err()'
+[is-err-forward]
+match='match :[target] { Err(:[e]) => true, Ok(:[var]) => false, }'
+rewrite=':[target].is_err()'
+[is-none-backward]
+match='match :[target] { Some(:[var]) => false, None => true, }'
+rewrite=':[target].is_none()'
+[is-none-forward]
+match='match :[target] { None => true, Some(:[var]) => false, }'
+rewrite=':[target].is_none()'
+[is-ok-backward]
+match='match :[target] { Ok(:[var]) => true, Err(:[e]) => false, }'
+rewrite=':[target].is_ok()'
+[is-ok-forward]
+match='match :[target] { Err(:[e]) => false, Ok(:[var]) => true, }'
+rewrite=':[target].is_ok()'
+[is-some-forward]
+match='match :[target] { None => false, Some(:[var]) => true, }'
+rewrite=':[target].is_some()'
+[is-some-backward]
+match='match :[target] { Some(:[var]) => true, None => false, }'
+rewrite=':[target].is_some()'
+[len-range]
+match=':[[s]][:[?start]..:[[s]].len()]'
+rewrite=':[s][:[?start]..]'
+[map-flatten-flatmap]
+match='.map(:[pat]) .flatten()'
+rewrite='.flat_map(:[pat])'
+[ok-or-else-backward]
+match='match :[target] { Some(:[var]) => Ok(:[var]), None => Err(:[foo]), }'
+rewrite=':[target].ok_or_else(|| { :[foo] })'
+[ok-or-else-forward]
+match='match :[target] { None => Err(:[foo]), Some(:[var]) => Ok(:[var]), }'
+rewrite=':[target].ok_or_else(|| { :[foo] })'
+[ok-return-none-ok-interrogation-forward]
+match='match :[target] { Ok(:[var]) => :[var], Err(:[pat]) => return None, }'
+rewrite=':[target].ok()?'
+[ok-return-none-ok-interrogation-backward]
+match='match :[target] { Err(:[pat]) => return None, Ok(:[var]) => :[var], }'
+rewrite=':[target].ok()?'
+[option-return-none-interrogation-forward]
+match='match :[target] { Some(:[var]) => :[var], None => return None, }'
+rewrite=':[target]?'
+[option-return-none-interrogation-backward]
+match='match :[target] { None => return None, Some(:[var]) => :[var], }'
+rewrite=':[target]?'
+[or-else-backward]
+match='match :[target] { Some(:[var]) => Some(:[var]), None => :[foo], }'
+rewrite=':[target].or_else(|| { :[foo] })'
+[or-else-forward]
+match='match :[target] { None => :[foo], Some(:[var]) => Some(:[var]), }'
+rewrite=':[target].or_else(|| { :[foo] })'
+[rand-then-forward]
+match='match :[target] { Err(:[pat]) => Err(:[pat]), Ok(:[var]) => :[foo], }'
+rewrite=':[target].and_then(|:[var]| { :[foo] })'
+rule='''
+where match :[foo] {
+| "Ok(:[_])" -> false
+| ":[_]" -> true
+}
+'''
+[rand-then-backward]
+match='match :[target] { Ok(:[var]) => :[foo], Err(:[pat]) => Err(:[pat]), }'
+rewrite=':[target].and_then(|:[var]| { :[foo] })'
+rule='''
+where match :[foo] {
+| "Ok(:[_])" -> false
+| ":[_]" -> true
+}
+'''
+[rerr-backward]
+match='match :[target] { Ok(:[var]) => None, Err(:[e]) => Some(:[e]), }'
+rewrite=':[target].err()'
+[rerr-forward]
+match='match :[target] { Err(:[e]) => Some(:[e]), Ok(:[var]) => None, }'
+rewrite=':[target].err()'
+[rmap-err-backward]
+match='match :[target] { Ok(:[x]) => Ok(:[x]), Err(:[var]) => Err(:[foo]), }'
+rewrite=':[target].map_err(|:[var]| { :[foo] })'
+rule='where :[var] != :[foo]'
+[rmap-err-forward]
+match='match :[target] { Err(:[var]) => Err(:[foo]), Ok(:[x]) => Ok(:[x]), }'
+rewrite=':[target].map_err(|:[var]| { :[foo] })'
+rule='where :[var] != :[foo]'
+[rmap-err-interrogation-backward]
+match='match :[target] { Ok(:[x]) => Ok(:[x]), Err(:[var]) => return Err(:[foo]), }'
+rewrite=':[target].map_err(|:[var]| { :[foo] })?'
+[rmap-err-interrogation-forward]
+match='match :[target] { Err(:[var]) => return Err(:[foo]), Ok(:[x]) => Ok(:[x]), }'
+rewrite=':[target].map_err(|:[var]| { :[foo] })?'
+[rok-backward]
+match='match :[target] { Ok(:[var]) => Some(:[var]), Err(:[e]) => None, }'
+rewrite=':[target].ok()'
+[rok-forward]
+match='match :[target] { Err(:[e]) => None, Ok(:[var]) => Some(:[var]), }'
+rewrite=':[target].ok()'
+[ror-else-backward]
+match='match :[target] { Ok(:[var]) => Ok(:[var]), Err(:[e]) => :[foo], }'
+rewrite=':[target].or_else(|:[e]| { :[foo] })'
+[ror-else-forward]
+match='match :[target] { Err(:[e]) => :[foo], Ok(:[var]) => Ok(:[var]), }'
+rewrite=':[target].or_else(|:[e]| { :[foo] })'
+[unwrap-err-ok-or-else-interrogation-backward]
+match='match :[target] { Some(:[var]) => :[var], None => return Err(:[err]), }'
+rewrite=':[target].ok_or_else(|| :[err])?'
+[unwrap-err-ok-or-else-interrogation-forward]
+match='match :[target] { None => return Err(:[err]), Some(:[var]) => :[var], }'
+rewrite=':[target].ok_or_else(|| :[err])?'

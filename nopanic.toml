@@ -1,0 +1,20 @@
+# Those templates aim at folding unwrap and expect panics in the error case of
+# their enclosing `Result` return type. They may require significant
+# adjustments — e.g. `(t: Option)?` returns `NoneError`, and that may not be
+# what the enclosing `Result` expects.
+# They also change the semantics of the code, of course.
+
+[unwrap-merge-in-result]
+match='''
+fn :[signature] -> Result<:[foo]> {:[pre].unwrap():[?fu\n]:[? idt]:[post]}
+'''
+rewrite='''
+fn :[signature] -> Result<:[foo]> {:[pre]?:[fu]:[idt]:[post]}
+'''
+[expect-merge-in-result]
+match='''
+fn :[signature] -> Result<:[foo]> {:[pre].expect(:[cont]):[?fu\n]:[ idt]:[post]}
+'''
+rewrite='''
+fn :[signature] -> Result<:[foo]> {:[pre]?:[fu]:[idt]:[post]}
+'''

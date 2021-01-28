@@ -1,0 +1,48 @@
+# Those templates are expected to demand significant adjustments to modified code.
+# They should probably not be part of an unsupervised workflow (e.g. CI).
+
+[if-continue-filter-neg]
+match='for :[var] in :[iter] { if !:[cond] { continue; } :[rest] }'
+rewrite='for :[var] in :[iter].iter().filter(|:[var]| :[cond]) {:[rest]}'
+[if-let-ok-map]
+match='if let Ok(:[var]) = :[opt] { Ok(:[out]) } else { Err(:[e]) }'
+rewrite=':[opt].map_or_else(|| :[e], |:[var]| { :[out] })'
+rule='where :[var] != :[out]'
+[map-unwrap]
+match='.map(:[map_pre].unwrap()):[?sp].collect:[?typ]():[end\n]'
+rewrite='.map(:[map_pre]):[sp].collect::<Result<_, _>>()?:[end]'
+[runwrap-or-else-backward]
+match='match :[target] { Ok(:[var]) => :[var], Err(:[e]) => :[foo], }'
+rewrite=':[target].unwrap_or_else(|:[e]| { :[foo] })'
+[runwrap-or-else-forward]
+match='match :[target] { Err(:[e]) => :[foo], Ok(:[var]) => :[var], }'
+rewrite=':[target].unwrap_or_else(|:[e]| { :[foo] })'
+[unwrap-or-else-backward]
+match='match :[target] { Some(:[var]) => :[var], None => :[foo], }'
+rewrite=':[target].unwrap_or_else(|| { :[foo] })'
+rule=
+'''
+where match :[foo] {
+           | ":[_~return .+]" -> false
+           | ":[_]" -> true
+}
+'''
+[unwrap-or-else-forward]
+match='match :[target] { None => :[foo], Some(:[var]) => :[var], }'
+rewrite=':[target].unwrap_or_else(|| { :[foo] })'
+rule='''
+where match :[foo] {
+           | ":[_~return .+]" -> false
+           | ":[_]" -> true
+}
+'''
+[zero-range]
+match=':[[s]][0..:[[end]]]'
+rewrite=':[[s]][..:[[end]]]'
+# Those do not work on Iterator traits, but may work on arrays, vecs ...
+[iter-any-equals-right]
+match='.any(|:[var]| :[var] == :[name])'
+rewrite='.contains(:[name])'
+[iter-any-equals-left]
+match='.any(|:[var]| :[name] == :[var])'
+rewrite='.contains(:[name])'
