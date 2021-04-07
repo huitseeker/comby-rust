@@ -223,3 +223,15 @@ rewrite=':[target].ok_or_else(|| :[err])?'
 [unwrap-err-ok-or-else-interrogation-forward]
 match='match :[target] { None => return Err(:[err]), Some(:[var]) => :[var], }'
 rewrite=':[target].ok_or_else(|| :[err])?'
+[useless_ref_left_operand]
+match='&:[left.] :[op.] :[right]'
+rewrite=':[left] :[op] :[right]'
+rule='''
+where match :[op] {
+| "+" -> true
+| "*" -> true
+| "-" -> true
+| "/" -> true
+| :[_] -> false
+}
+'''

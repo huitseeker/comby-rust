@@ -273,3 +273,8 @@ pub fn unwrap_err_ok_or_else_interrogation_forward(t: Option<Foo>) -> Result<Foo
     let inner = t.ok_or_else(|| ())?;
     okify(inner)
 }
+
+pub fn useless_ref_left_operand() {
+    let a = 1 + 2;
+    ()
+}
