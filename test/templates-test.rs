@@ -428,3 +428,8 @@ pub fn unwrap_err_ok_or_else_interrogation_forward(t: Option<Foo>) -> Result<Foo
     };
     okify(inner)
 }
+
+pub fn captured_identifiers() {
+    let world = "World";
+    println!("Hello {}", world);
+}
