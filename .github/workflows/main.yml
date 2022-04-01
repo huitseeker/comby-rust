@@ -15,6 +15,9 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
 
+      - name: Install xmllint
+        run: sudo apt-get install -y libpcre3-dev
+
       - name: install Comby
         run: TERM=xterm bash <(curl -sL get.comby.dev)
 
