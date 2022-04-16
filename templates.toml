@@ -71,10 +71,10 @@ rewrite=':[target]?'
 match='match :[target] { Ok(:[var]) => :[var], Err(:[err]) => return Err(:[err]), }'
 rewrite=':[target]?'
 [contains-let-remove]
-match='if :[tbl].contains_key(:[key]) { let :[var] = :[tbl].remove(:[key]); :[?cont] }'
+match='if :[tbl].contains_key(:[key]) { let :[var] = :[tbl].remove(:[key]); :[cont] }'
 rewrite='let :[var] = :[tbl].remove(:[key]); if :[var].is_some() { :[cont] }'
 [contains-remove]
-match='if :[tbl].contains_key(:[key]) { :[tbl].remove(:[key]); :[?cont] }'
+match='if :[tbl].contains_key(:[key]) { :[tbl].remove(:[key]); :[cont] }'
 rewrite='if :[tbl].remove(:[key]).is_some() { :[cont] }'
 [entry-match-backward]
 match='''
@@ -138,8 +138,8 @@ rewrite=':[target].is_some()'
 match='match :[target] { Some(:[var]) => true, None => false, }'
 rewrite=':[target].is_some()'
 [len-range]
-match=':[[s]][:[?start]..:[[s]].len()]'
-rewrite=':[s][:[?start]..]'
+match=':[[s]][:[start]..:[[s]].len()]'
+rewrite=':[s][:[start]..]'
 [map-flatten-flatmap]
 match='.map(:[pat]) .flatten()'
 rewrite='.flat_map(:[pat])'

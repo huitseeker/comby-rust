@@ -9,7 +9,7 @@ match='if let Ok(:[var]) = :[opt] { Ok(:[out]) } else { Err(:[e]) }'
 rewrite=':[opt].map_or_else(|| :[e], |:[var]| { :[out] })'
 rule='where :[var] != :[out]'
 [map-unwrap]
-match='.map(:[map_pre].unwrap()):[?sp].collect:[?typ]():[end\n]'
+match='.map(:[map_pre].unwrap()):[sp].collect:[typ]():[end\n]'
 rewrite='.map(:[map_pre]):[sp].collect::<Result<_, _>>()?:[end]'
 [runwrap-or-else-backward]
 match='match :[target] { Ok(:[var]) => :[var], Err(:[e]) => :[foo], }'
@@ -20,8 +20,7 @@ rewrite=':[target].unwrap_or_else(|:[e]| { :[foo] })'
 [unwrap-or-else-backward]
 match='match :[target] { Some(:[var]) => :[var], None => :[foo], }'
 rewrite=':[target].unwrap_or_else(|| { :[foo] })'
-rule=
-'''
+rule='''
 where match :[foo] {
            | ":[_~return .+]" -> false
            | ":[_]" -> true
