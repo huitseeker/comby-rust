@@ -223,6 +223,6 @@ rewrite=':[target].ok_or_else(|| :[err])?'
 [unwrap-err-ok-or-else-interrogation-forward]
 match='match :[target] { None => return Err(:[err]), Some(:[var]) => :[var], }'
 rewrite=':[target].ok_or_else(|| :[err])?'
-[captured-identifiers]
-match=':[[macro]]!(":[some]{}:[post]", :[[var]])'
-rewrite=':[macro]!(":[some]{:[var]}:[post]")'
+# [captured-identifiers]
+# match=':[[macro]]!(":[some]{}:[post]", :[[var]])'
+# rewrite=':[macro]!(":[some]{:[var]}:[post]")'
