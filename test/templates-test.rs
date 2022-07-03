@@ -433,3 +433,19 @@ pub fn captured_identifiers() {
     let world = "World";
     println!("Hello {}", world);
 }
+
+pub fn if_then_some_forward() -> Option<Foo> {
+    if true {
+        Some(Foo::Bar)
+    } else {
+        None
+    }
+}
+
+pub fn if_then_some_backward() -> Option<Foo> {
+    if true {
+        None
+    } else {
+        Some(Foo::Bar)
+    }
+}

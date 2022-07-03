@@ -226,3 +226,9 @@ rewrite=':[target].ok_or_else(|| :[err])?'
 # [captured-identifiers]
 # match=':[[macro]]!(":[some]{}:[post]", :[[var]])'
 # rewrite=':[macro]!(":[some]{:[var]}:[post]")'
+[if-then-some-forward]
+match='if :[cond] { Some(:[foo]) } else { None }'
+rewrite=':[cond].then_some(:[foo])'
+[if-then-some-backward]
+match='if :[cond] { None } else { Some(:[foo]) }'
+rewrite='(!:[cond]).then_some(:[foo])'

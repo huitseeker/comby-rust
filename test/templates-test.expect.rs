@@ -276,5 +276,13 @@ pub fn unwrap_err_ok_or_else_interrogation_forward(t: Option<Foo>) -> Result<Foo
 
 pub fn captured_identifiers() {
     let world = "World";
-    println!("Hello {world}");
+    println!("Hello {}", world);
+}
+
+pub fn if_then_some_forward() -> Option<Foo> {
+    true.then_some(Foo::Bar)
+}
+
+pub fn if_then_some_backward() -> Option<Foo> {
+    (!true).then_some(Foo::Bar)
 }
