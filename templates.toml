@@ -228,7 +228,7 @@ rewrite=':[target].ok_or_else(|| :[err])?'
 # rewrite=':[macro]!(":[some]{:[var]}:[post]")'
 [if-then-some-forward]
 match='if :[cond] { Some(:[foo]) } else { None }'
-rewrite=':[cond].then_some(:[foo])'
+rewrite='(:[cond]).then_some(:[foo])'
 [if-then-some-backward]
 match='if :[cond] { None } else { Some(:[foo]) }'
 rewrite='(!:[cond]).then_some(:[foo])'

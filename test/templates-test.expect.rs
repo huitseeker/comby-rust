@@ -280,7 +280,7 @@ pub fn captured_identifiers() {
 }
 
 pub fn if_then_some_forward() -> Option<Foo> {
-    true.then_some(Foo::Bar)
+    (true).then_some(Foo::Bar)
 }
 
 pub fn if_then_some_backward() -> Option<Foo> {
