@@ -279,10 +279,10 @@ pub fn captured_identifiers() {
     println!("Hello {}", world);
 }
 
-pub fn if_then_some_forward() -> Option<Foo> {
-    (true).then_some(Foo::Bar)
+pub fn if_then_forward() -> Option<Foo> {
+    (true).then(|| Foo::Bar)
 }
 
-pub fn if_then_some_backward() -> Option<Foo> {
-    (!true).then_some(Foo::Bar)
+pub fn if_then_backward() -> Option<Foo> {
+    (!true).then(|| Foo::Bar)
 }

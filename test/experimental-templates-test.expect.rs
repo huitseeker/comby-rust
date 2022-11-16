@@ -47,3 +47,11 @@ pub fn iter_any_equals_right(t: Vec<Foo>) -> bool {
 pub fn iter_any_equals_left(t: Vec<Foo>) -> bool {
     t.iter().contains(&Foo::Bar)
 }
+
+pub fn if_then_some_forward() -> Option<Foo> {
+    (true).then_some(Foo::Bar)
+}
+
+pub fn if_then_some_backward() -> Option<Foo> {
+    (!true).then_some(Foo::Bar)
+}

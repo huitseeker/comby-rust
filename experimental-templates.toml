@@ -45,3 +45,9 @@ rewrite='.contains(:[name])'
 [iter-any-equals-left]
 match='.any(|:[var]| :[name] == :[var])'
 rewrite='.contains(:[name])'
+[if-then-some-forward]
+match='if :[cond] { Some(:[foo]) } else { None }'
+rewrite='(:[cond]).then_some(:[foo])'
+[if-then-some-backward]
+match='if :[cond] { None } else { Some(:[foo]) }'
+rewrite='(!:[cond]).then_some(:[foo])'
