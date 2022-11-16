@@ -232,3 +232,6 @@ rewrite='(:[cond]).then(|| :[foo])'
 [if-then-backward]
 match='if :[cond] { None } else { Some(:[foo]) }'
 rewrite='(!:[cond]).then(|| :[foo])'
+[let-if-let-else-return]
+match='let :[var] = if let :[foo](:[pat]) = :[assign] { :[pat] } else { return :[cond] }'
+rewrite='let :[foo](:[var]) = :[assign] else { return :[cond] }'

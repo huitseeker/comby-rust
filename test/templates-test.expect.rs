@@ -286,3 +286,8 @@ pub fn if_then_forward() -> Option<Foo> {
 pub fn if_then_backward() -> Option<Foo> {
     (!true).then(|| Foo::Bar)
 }
+
+pub fn let_if_let_else_return(foo: Option<u64>) -> u64 {
+    let Some(bar) = foo else { return 0u64; };
+    bar
+}
