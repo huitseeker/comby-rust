@@ -54,3 +54,55 @@ rewrite='(!:[cond]).then_some(:[foo])'
 [if-let-else-return]
 match='if let :[foo](:[pat]) = :[assign] { :[cond1] } else { return :[cond] }'
 rewrite='let :[foo](:[pat]) = :[assign] else { return :[cond] }; :[cond1]'
+# unwrap_or_default (Rust 1.82+) - Replace match statements that return default values
+[unwrap-or-default-option]
+match='match :[option] { Some(:[value]) => :[value], None => :[default], }'
+rewrite=':[option].unwrap_or_default()'
+rule='''
+where match :[default] {
+| "0" -> true
+| "0.0" -> true
+| "0.0f32" -> true
+| "0.0f64" -> true
+| "false" -> true
+| "\'\\0\'" -> true
+| "String::new()" -> true
+| "Vec::new()" -> true
+| "HashMap::new()" -> true
+| "BTreeMap::new()" -> true
+| "HashSet::new()" -> true
+| "BTreeSet::new()" -> true
+| ":" -> false
+}
+'''
+[unwrap-or-default-result]
+match='match :[result] { Ok(:[value]) => :[value], Err(:[_]) => :[default], }'
+rewrite=':[result].unwrap_or_default()'
+rule='''
+where match :[default] {
+| "0" -> true
+| "0.0" -> true
+| "0.0f32" -> true
+| "0.0f64" -> true
+| "false" -> true
+| "\'\\0\'" -> true
+| "String::new()" -> true
+| "Vec::new()" -> true
+| "HashMap::new()" -> true
+| "BTreeMap::new()" -> true
+| "HashSet::new()" -> true
+| "BTreeSet::new()" -> true
+| ":" -> false
+}
+'''
+# Option::is_none_or (Rust 1.80) - Replace manual None/Some predicate checks
+[option-is-none-or-forward]
+match='match :[option] { None => true, Some(:[value]) => :[predicate], }'
+rewrite=':[option].is_none_or(|:[value]| :[predicate])'
+[option-is-none-or-backward]
+match='match :[option] { Some(:[value]) => :[predicate], None => true, }'
+rewrite=':[option].is_none_or(|:[value]| :[predicate])'
+# Vec::extract_if (Rust 1.86) - Replace filter+retain patterns
+[vec-filter-retain]
+match='let :[result] = :[vec].iter().filter(|:[item]| :[predicate]).cloned().collect::<Vec<_>>(); :[vec].retain(|:[item]| !:[predicate])'
+rewrite='let :[result] = :[vec].extract_if(|:[item]| :[predicate]).collect::<Vec<_>>();'
