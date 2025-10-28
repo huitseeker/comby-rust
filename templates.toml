@@ -226,12 +226,13 @@ rewrite=':[target].ok_or_else(|| :[err])?'
 # [captured-identifiers]
 # match=':[[macro]]!(":[some]{}:[post]", :[[var]])'
 # rewrite=':[macro]!(":[some]{:[var]}:[post]")'
-[if-then-forward]
-match='if :[cond] { Some(:[foo]) } else { None }'
-rewrite='(:[cond]).then(|| :[foo])'
-[if-then-backward]
-match='if :[cond] { None } else { Some(:[foo]) }'
-rewrite='(!:[cond]).then(|| :[foo])'
+# Disabled due to over-matching if-else-if chains
+# [if-then-forward]
+# match='if :[cond] { Some(:[foo]) } else { None }'
+# rewrite='(:[cond]).then(|| :[foo])'
+# [if-then-backward]
+# match='if :[cond] { None } else { Some(:[foo]) }'
+# rewrite='(!:[cond]).then(|| :[foo])'
 [let-if-let-else-return]
 match='let :[var] = if let :[foo](:[pat]) = :[assign] { :[pat] } else { return :[cond] }'
 rewrite='let :[foo](:[var]) = :[assign] else { return :[cond] }'

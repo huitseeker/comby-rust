@@ -93,6 +93,38 @@ pub fn let_if_let_else_return(foo: Option<u64>) -> u64 {
     }
 }
 
+// Test cases demonstrating bool::then over-matching issues
+pub fn simple_then_case(condition: bool) -> Option<i32> {
+    if condition {
+        Some(42)
+    } else {
+        None
+    }
+}
+
+// BAD: Should NOT be transformed - if-else-if chain demonstrates over-matching
+pub fn problematic_if_else_if_chain(x: i32) -> Option<i32> {
+    if x > 10 {
+        Some(100)
+    } else if x > 5 {
+        Some(50)
+    } else {
+        None
+    }
+}
+
+pub fn complex_if_else_if_chain(condition_a: bool, condition_b: bool, condition_c: bool) -> Option<String> {
+    if condition_a {
+        Some("first".to_string())
+    } else if condition_b {
+        Some("second".to_string())
+    } else if condition_c {
+        Some("third".to_string())
+    } else {
+        None
+    }
+}
+
 // Test cases for new patterns
 
 // Additional pattern: unwrap_or_default (Rust 1.82+)
