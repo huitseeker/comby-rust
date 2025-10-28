@@ -280,11 +280,19 @@ pub fn captured_identifiers() {
 }
 
 pub fn if_then_forward() -> Option<Foo> {
-    (true).then(|| Foo::Bar)
+    if true {
+        Some(Foo::Bar)
+    } else {
+        None
+    }
 }
 
 pub fn if_then_backward() -> Option<Foo> {
-    (!true).then(|| Foo::Bar)
+    if true {
+        None
+    } else {
+        Some(Foo::Bar)
+    }
 }
 
 pub fn let_if_let_else_return(foo: Option<u64>) -> u64 {

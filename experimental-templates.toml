@@ -45,12 +45,73 @@ rewrite='.contains(:[name])'
 [iter-any-equals-left]
 match='.any(|:[var]| :[name] == :[var])'
 rewrite='.contains(:[name])'
-[if-then-some-forward]
-match='if :[cond] { Some(:[foo]) } else { None }'
-rewrite='(:[cond]).then_some(:[foo])'
-[if-then-some-backward]
-match='if :[cond] { None } else { Some(:[foo]) }'
-rewrite='(!:[cond]).then_some(:[foo])'
+# Disabled bool::then patterns due to over-matching if-else-if chains
+# TODO: Need more sophisticated pattern matching to distinguish simple if-else from if-else-if
+# The patterns need context awareness to avoid matching parts of chains
+# [if-then-some-safe]
+# [if-then-backward-safe]
 [if-let-else-return]
 match='if let :[foo](:[pat]) = :[assign] { :[cond1] } else { return :[cond] }'
 rewrite='let :[foo](:[pat]) = :[assign] else { return :[cond] }; :[cond1]'
+# More conservative unwrap_or_default patterns that avoid matching transformations
+[unwrap-or-default-option-conservative]
+match='match :[option] { Some(x) => x, None => :[default], }'
+rewrite=':[option].unwrap_or_default()'
+rule='''
+where match :[default] {
+| "0" -> true
+| "0.0" -> true
+| "0.0f32" -> true
+| "0.0f64" -> true
+| "false" -> true
+| "\'\\0\'" -> true
+| "String::new()" -> true
+| "Vec::new()" -> true
+| "HashMap::new()" -> true
+| "BTreeMap::new()" -> true
+| "HashSet::new()" -> true
+| "BTreeSet::new()" -> true
+| ":" -> false
+}
+'''
+[unwrap-or-default-result-conservative]
+match='match :[result] { Ok(x) => x, Err(_) => :[default], }'
+rewrite=':[result].unwrap_or_default()'
+rule='''
+where match :[default] {
+| "0" -> true
+| "0.0" -> true
+| "0.0f32" -> true
+| "0.0f64" -> true
+| "false" -> true
+| "\'\\0\'" -> true
+| "String::new()" -> true
+| "Vec::new()" -> true
+| "HashMap::new()" -> true
+| "BTreeMap::new()" -> true
+| "HashSet::new()" -> true
+| "BTreeSet::new()" -> true
+| ":" -> false
+}
+'''
+# Option::is_none_or (Rust 1.80) - Replace manual None/Some predicate checks
+[option-is-none-or-forward]
+match='match :[option] { None => true, Some(:[value]) => :[predicate], }'
+rewrite=':[option].is_none_or(|:[value]| :[predicate])'
+[option-is-none-or-backward]
+match='match :[option] { Some(:[value]) => :[predicate], None => true, }'
+rewrite=':[option].is_none_or(|:[value]| :[predicate])'
+# Vec::extract_if (Rust 1.86) - Replace filter+retain patterns
+[vec-filter-retain]
+match='let :[result] = :[vec].iter().filter(|:[item]| :[predicate]).cloned().collect::<Vec<_>>(); :[vec].retain(|:[item]| !:[predicate])'
+rewrite='let :[result] = :[vec].extract_if(|:[item]| :[predicate]).collect::<Vec<_>>();'
+
+# Safer then/then_some patterns - disabled for now due to complexity
+# The existing patterns in templates.toml are too aggressive for if-else-if chains
+# TODO: Design more precise patterns that can distinguish simple if-else from if-else-if
+# [if-then-some-safe]
+# match='if :[cond] { Some(:[foo]) } else { None }'
+# rewrite='(:[cond]).then_some(:[foo])'
+# [if-then-safe]
+# match='if :[cond] { Some(:[foo]) } else { None }'
+# rewrite='(:[cond]).then(|| :[foo])'
