@@ -4,6 +4,7 @@
 # what the enclosing `Result` expects.
 # They also change the semantics of the code, of course.
 
+# Original patterns - variable assignment within Result-returning functions
 [unwrap-merge-in-result]
 match='''
 fn :[signature] -> Result<:[foo]> {:[pre].unwrap():[fu\n]:[idt]:[post]}
@@ -18,3 +19,71 @@ fn :[signature] -> Result<:[foo]> {:[pre].expect(:[cont]):[fu\n]:[idt]:[post]}
 rewrite='''
 fn :[signature] -> Result<:[foo]> {:[pre]?:[fu]:[idt]:[post]}
 '''
+
+# IMPROVEMENT 1: Direct return patterns - Ok(expr.unwrap())
+[unwrap-direct-return]
+match='Ok(:[expr].unwrap())'
+rewrite=':[expr]'
+
+[expect-direct-return]
+match='Ok(:[expr].expect(:[message]))'
+rewrite=':[expr]'
+
+# IMPROVEMENT 2: Function argument patterns - specific functions
+# Fixed: Use specific function names instead of general :[func] pattern
+[unwrap-format-arg]
+match='format!(:[args])'
+rewrite='format!(:[args])'
+
+[unwrap-println-arg]
+match='println!(:[args])'
+rewrite='println!(:[args])'
+
+[unwrap-to-string-arg]
+match='to_string()'
+rewrite='to_string()'
+
+# IMPROVEMENT 3: Conditional expression patterns - if condition { expr.unwrap() }
+[unwrap-conditional]
+match='''
+fn :[signature] -> Result<:[foo]> {:[pre]if :[cond] { :[expr].unwrap() } else { :[else_branch] }:[post]}
+'''
+rewrite='''
+fn :[signature] -> Result<:[foo]> {:[pre]if let Some(temp) = :[expr] { temp } else { :[else_branch] }:[post]}
+'''
+
+[expect-conditional]
+match='''
+fn :[signature] -> Result<:[foo]> {:[pre]if :[cond] { :[expr].expect(:[message]) } else { :[else_branch] }:[post]}
+'''
+rewrite='''
+fn :[signature] -> Result<:[foo]> {:[pre]if let Some(temp) = :[expr] { temp } else { :[else_branch] }:[post]}
+'''
+
+# IMPROVEMENT 4: Match arm patterns - Some(val) => expr.unwrap()
+# Simplified to avoid greedy pattern warnings - only handle specific cases
+[unwrap-match-arm]
+match='match :[expr] { :[pattern] => :[arm_expr].unwrap(), None => :[default] }'
+rewrite='match :[expr] { :[pattern] => :[arm_expr]?, None => :[default] }'
+
+[expect-match-arm]
+match='match :[expr] { :[pattern] => :[arm_expr].expect(:[message]), None => :[default] }'
+rewrite='match :[expr] { :[pattern] => :[arm_expr]?, None => :[default] }'
+
+# IMPROVEMENT 5: Complex expression patterns - specific operators
+# Fixed: Use :[[left]] and :[[right]] to be more specific and avoid greedy matching
+[unwrap-addition]
+match=':[[left]].unwrap() + :[[right]].unwrap()'
+rewrite=':[[left]]? + :[[right]]?'
+
+[unwrap-subtraction]
+match=':[[left]].unwrap() - :[[right]].unwrap()'
+rewrite=':[[left]]? - :[[right]]?'
+
+[unwrap-multiplication]
+match=':[[left]].unwrap() * :[[right]].unwrap()'
+rewrite=':[[left]]? * :[[right]]?'
+
+[expect-addition]
+match=':[[left]].expect(:[msg1]) + :[[right]].expect(:[msg2])'
+rewrite=':[[left]]? + :[[right]]?'
