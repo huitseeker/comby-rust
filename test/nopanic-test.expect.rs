@@ -8,18 +8,25 @@ fn foo(t: Option<Foo>) -> Result<Foo, NoneError> {
     let out = t?;
     Ok(out)
 }
+
 fn foo_exp(t: Option<Foo>) -> Result<Foo, NoneError> {
     let out = t?;
     Ok(out)
 }
+
 fn bar(t: Result<Foo, NoneError>) -> Result<Foo, NoneError> {
     let out = t?;
     Ok(out)
 }
+
 fn bar_exp(t: Result<Foo, NoneError>) -> Result<Foo, NoneError> {
     let out = t?;
     Ok(out)
 }
+
+// NEW PATTERNS TEST COVERAGE
+
+// 1. Direct return patterns
 fn direct_return_unwrap(opt: Option<Foo>) -> Result<Foo, NoneError> {
     opt
 }
@@ -30,11 +37,11 @@ fn direct_return_expect(res: Result<Foo, String>) -> Result<Foo, String> {
 
 // 2. Function argument patterns
 fn function_arg_unwrap(opt: Option<i32>) -> Result<String, NoneError> {
-    Ok(format!("Value: {}", opt.unwrap()))
+    Ok(format!("Value: {}", opt?))
 }
 
 fn function_arg_expect(opt: Option<i32>) -> Result<String, NoneError> {
-    Ok(format!("Value: {}", opt.expect("Expected value")))
+    Ok(format!("Value: {}", opt?))
 }
 
 // 3. Complex expression patterns
@@ -51,7 +58,7 @@ fn complex_expression_expect(a: Option<i32>, b: Option<i32>) -> Result<i32, None
 // 4. Match expression patterns
 fn match_unwrap(opt: Option<i32>) -> Result<String, NoneError> {
     let result = match opt {
-        Some(val) => format!("Number: {}", val.unwrap()),
+        Some(val) => format!("Number: {}", val?),
         None => String::new(),
     };
     Ok(result)
@@ -59,7 +66,7 @@ fn match_unwrap(opt: Option<i32>) -> Result<String, NoneError> {
 
 fn match_expect(opt: Option<i32>) -> Result<String, NoneError> {
     let result = match opt {
-        Some(val) => format!("Number: {}", val.expect("Should have value")),
+        Some(val) => format!("Number: {}", val?),
         None => String::new(),
     };
     Ok(result)
@@ -75,12 +82,12 @@ fn conditional_expect(condition: bool, opt: Option<i32>) -> Result<i32, NoneErro
     Ok(value)
 }
 fn closure_unwrap(data: Vec<Option<i32>>) -> Result<Vec<i32>, NoneError> {
-    let results: Vec<i32> = data.into_iter().map(|opt| opt.unwrap()).collect();
+    let results: Vec<i32> = data.into_iter().map(|opt| opt?).collect();
     Ok(results)
 }
 
 fn closure_expect(data: Vec<Option<i32>>) -> Result<Vec<i32>, NoneError> {
-    let results: Vec<i32> = data.into_iter().map(|opt| opt.expect("Expected value")).collect();
+    let results: Vec<i32> = data.into_iter().map(|opt| opt?).collect();
     Ok(results)
 }
 
@@ -88,6 +95,6 @@ fn closure_expect(data: Vec<Option<i32>>) -> Result<Vec<i32>, NoneError> {
 fn mixed_patterns(opt1: Option<Foo>, opt2: Option<i32>) -> Result<String, NoneError> {
     match opt1 {
         Some(foo) => Ok(format!("{:?}", foo)),
-        None => Ok(format!("Default: {}", opt2.unwrap())),
+        None => Ok(format!("Default: {}", opt2?)),
     }
 }

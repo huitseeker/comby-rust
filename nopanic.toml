@@ -29,19 +29,16 @@ rewrite=':[expr]'
 match='Ok(:[expr].expect(:[message]))'
 rewrite=':[expr]'
 
-# IMPROVEMENT 2: Function argument patterns - specific functions
-# Fixed: Use specific function names instead of general :[func] pattern
-[unwrap-format-arg]
-match='format!(:[args])'
-rewrite='format!(:[args])'
+# IMPROVEMENT 2: Unwrap/expect in nested expression contexts
+# Catches unwraps inside macro arguments, function calls, and complex expressions
+# Complements the statement-level patterns (unwrap-merge-in-result, etc.)
+[unwrap-in-nested-expr]
+match=':[[expr]].unwrap()'
+rewrite=':[[expr]]?'
 
-[unwrap-println-arg]
-match='println!(:[args])'
-rewrite='println!(:[args])'
-
-[unwrap-to-string-arg]
-match='to_string()'
-rewrite='to_string()'
+[expect-in-nested-expr]
+match=':[[expr]].expect(:[msg])'
+rewrite=':[[expr]]?'
 
 # IMPROVEMENT 3: Conditional expression patterns - if condition { expr.unwrap() }
 [unwrap-conditional]
